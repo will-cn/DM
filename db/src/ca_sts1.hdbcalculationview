@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Calculation:scenario xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:Calculation="http://www.sap.com/ndb/BiModelCalculation.ecore" id="ca_sts1" applyPrivilegeType="NONE" dataCategory="CUBE" schemaVersion="3.0" outputViewType="Aggregation" cacheInvalidationPeriod="NONE" enforceSqlExecution="true">
+<descriptions defaultDescription="ca_sts1"/>
+<localVariables/>
+<variableMappings/>
+<dataSources>
+  <DataSource id="com.sap::SAGENCYDATA">
+    <resourceUri>com.sap::SAGENCYDATA</resourceUri>
+  </DataSource>
+  <DataSource id="com.sap::STRAVELAG">
+    <resourceUri>com.sap::STRAVELAG</resourceUri>
+  </DataSource>
+  <DataSource id="com.sap::SAGBOOKDAYS">
+    <resourceUri>com.sap::SAGBOOKDAYS</resourceUri>
+  </DataSource>
+</dataSources>
+<calculationViews>
+  <calculationView xsi:type="Calculation:JoinView" id="Join_1" cardinality="CN_N" joinType="inner">
+    <viewAttributes>
+      <viewAttribute id="AGENCYNUM"/>
+      <viewAttribute id="NUMBOOKINGS" aggregationType="sum"/>
+      <viewAttribute id="NAME"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="com.sap::SAGENCYDATA">
+      <mapping xsi:type="Calculation:AttributeMapping" target="AGENCYNUM" source="AGENCYNUM"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="NUMBOOKINGS" source="NUMBOOKINGS"/>
+    </input>
+  
+    <input node="com.sap::STRAVELAG">
+  
+      <mapping xsi:type="Calculation:AttributeMapping" target="NAME" source="NAME"/>
+  
+      <mapping xsi:type="Calculation:AttributeMapping" target="AGENCYNUM" source="AGENCYNUM"/>
+  
+    </input>
+    <joinAttribute name="AGENCYNUM"/>
+  </calculationView>
+  <calculationView xsi:type="Calculation:RankView" id="Rank_1">
+    <viewAttributes>
+      <viewAttribute id="AGENCYNUM"/>
+      <viewAttribute id="NUMBOOKINGS" aggregationType="sum"/>
+      <viewAttribute id="NAME"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="Join_1"/>
+    <rankingFilter type="RANK" offset="0" offsetReference="FRONT" dynamicPartitionAttributes="false">
+      <order byViewAttributeName="NUMBOOKINGS" direction="DESC"/>
+      <rankThreshold>
+        <value>5</value>
+      </rankThreshold>
+    </rankingFilter>
+  </calculationView>
+  <calculationView xsi:type="Calculation:JoinView" id="Join_2" cardinality="CN_N" joinType="inner">
+    <viewAttributes>
+      <viewAttribute id="AGENCYNUM"/>
+      <viewAttribute id="NUMBOOKINGS" aggregationType="sum"/>
+      <viewAttribute id="NAME"/>
+    
+      <viewAttribute id="ORDERDAY"/>
+      <viewAttribute id="DAYCOUNT" aggregationType="sum"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="Rank_1">
+      <mapping xsi:type="Calculation:AttributeMapping" target="AGENCYNUM" source="AGENCYNUM"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="NUMBOOKINGS" source="NUMBOOKINGS"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="NAME" source="NAME"/>
+    </input>
+    <input node="com.sap::SAGBOOKDAYS">
+      <mapping xsi:type="Calculation:AttributeMapping" target="ORDERDAY" source="ORDERDAY"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="DAYCOUNT" source="DAYCOUNT"/>
+      <mapping xsi:type="Calculation:AttributeMapping" target="AGENCYNUM" source="AGENCYNUM"/>
+    </input>
+  
+    <joinAttribute name="AGENCYNUM"/>
+  </calculationView>
+  <calculationView xsi:type="Calculation:RankView" id="Rank_2">
+    <viewAttributes>
+      <viewAttribute id="AGENCYNUM"/>
+      <viewAttribute id="NUMBOOKINGS" aggregationType="sum"/>
+      <viewAttribute id="NAME"/>
+      <viewAttribute id="ORDERDAY"/>
+      <viewAttribute id="DAYCOUNT" aggregationType="sum"/>
+    </viewAttributes>
+    <calculatedViewAttributes/>
+    <input node="Join_2"/>
+    <rankingFilter type="RANK" offset="0" offsetReference="FRONT" dynamicPartitionAttributes="false">
+      <partitionViewAttributeName id="AGENCYNUM"/>
+      <order byViewAttributeName="DAYCOUNT" direction="DESC"/>
+      <rankThreshold>
+        <value>1</value>
+      </rankThreshold>
+    </rankingFilter>
+  </calculationView>
+</calculationViews>
+
+<logicalModel id="Rank_2">
+  <attributes>
+    <attribute id="AGENCYNUM" order="1" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="AGENCYNUM"/>
+      <keyMapping columnObjectName="Rank_2" columnName="AGENCYNUM"/>
+    </attribute>
+    <attribute id="NAME" order="3" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="NAME"/>
+      <keyMapping columnObjectName="Rank_2" columnName="NAME"/>
+    </attribute>
+  
+    <attribute id="ORDERDAY" order="4" displayAttribute="false" attributeHierarchyActive="false">
+      <descriptions defaultDescription="ORDERDAY"/>
+      <keyMapping columnObjectName="Rank_2" columnName="ORDERDAY"/>
+    </attribute>
+  </attributes>
+  <calculatedAttributes/>
+  <baseMeasures>
+    <measure id="NUMBOOKINGS" order="2" aggregationType="sum" measureType="simple">
+      <descriptions defaultDescription="NUMBOOKINGS"/>
+      <measureMapping columnObjectName="Rank_2" columnName="NUMBOOKINGS"/>
+    </measure>
+  
+    <measure id="DAYCOUNT" order="5" aggregationType="sum" measureType="simple">
+      <descriptions defaultDescription="DAYCOUNT"/>
+      <measureMapping columnObjectName="Rank_2" columnName="DAYCOUNT"/>
+    </measure>
+  </baseMeasures>
+  <calculatedMeasures/>
+  <restrictedMeasures/>
+  <localDimensions/>
+</logicalModel>
+<layout>
+  <shapes>
+    <shape expanded="true" modelObjectName="Output" modelObjectNameSpace="MeasureGroup">
+      <upperLeftCorner x="92" y="112"/>
+    
+      <rectangleSize width="160"/>
+    </shape>
+    
+  
+    <shape expanded="true" modelObjectName="Join_1" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="547"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape modelObjectName="com.sap::SAGENCYDATA" modelObjectNameSpace="Join_1" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="20" y="30"/>
+      <rectangleSize width="211"/>
+    </shape>
+  
+    <shape modelObjectName="com.sap::STRAVELAG" modelObjectNameSpace="Join_1" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="320" y="30"/>
+      <rectangleSize width="193"/>
+    </shape>
+  
+    <shape expanded="true" modelObjectName="Rank_1" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="442"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+  
+    <shape expanded="true" modelObjectName="Join_2" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="322"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+    <shape modelObjectName="Rank_1" modelObjectNameSpace="Join_2" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="20" y="30"/>
+      <rectangleSize width="250"/>
+    </shape>
+    <shape modelObjectName="com.sap::SAGBOOKDAYS" modelObjectNameSpace="Join_2" modelObjectType="JoinNodeInput">
+      <upperLeftCorner x="320" y="30"/>
+      <rectangleSize width="214"/>
+    </shape>
+  
+    <shape expanded="true" modelObjectName="Rank_2" modelObjectNameSpace="CalculationView">
+      <upperLeftCorner x="92" y="217"/>
+      <rectangleSize height="30" width="160"/>
+    </shape>
+  </shapes>
+</layout>
+</Calculation:scenario>
